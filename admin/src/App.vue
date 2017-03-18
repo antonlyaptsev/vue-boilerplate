@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-<<<<<<< HEAD
     <v-app v-if="isLoggedIn" id="admin-panel" top-toolbar footer>
       <v-toolbar>
         <v-toolbar-side-icon />
@@ -94,21 +93,17 @@
 </script>
 
 <style>
- .wrapper {
-   display: flex;
-   justify-content: center;
-   align-items: center;
- }
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 
- .login {
-   max-width: 50%;
- }
+  .login {
+    width: 286px;
+  }
 
- .login {
-   width: 286px;
- }
-
- .login .input-group {
-   margin: 0;
- }
+  .login .input-group {
+    margin: 0;
+  }
 </style>
