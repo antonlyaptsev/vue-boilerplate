@@ -4,8 +4,8 @@
       <v-toolbar>
         <v-toolbar-side-icon />
         <v-toolbar-title>Toolbar</v-toolbar-title>
-        <v-toolbar-items>
-          <v-toolbar-item ripple><button type="button" name="button" @click="logout">LogOut</button></v-toolbar-item>
+        <v-toolbar-items @click="logout">
+          <v-toolbar-item ripple>LogOut</v-toolbar-item>
         </v-toolbar-items>
       </v-toolbar>
       <main>
@@ -17,16 +17,24 @@
       </main>
       <v-footer>Footer</v-footer>
     </v-app>
-    <v-app v-else class="login">
-      <v-container class="v-center" fluid>
-        <v-text-field v-model="login" name="login" label="Login"></v-text-field>
+    <v-app v-else class="wrapper">
+      <v-container class="login" fluid>
         <v-text-field
-          name="login"
-          label="Password"
+          v-model="username"
+          label="Username"
+          name="username"
+          ref="username"
+          :rules="[invalidUsername]">
+        </v-text-field>
+        <v-text-field
           v-model="password"
+          label="Password"
+          name="password"
           type="password"
-        ></v-text-field>
-        <v-btn block secondary dark @click.native="tryLogin">LOGIN</v-btn>
+          ref="password"
+          :rules="[invalidPassword]">
+        </v-text-field>
+        <v-btn block secondary dark @click.native="login">LOGIN</v-btn>
       </v-container>
     </v-app>
   </div>
@@ -35,13 +43,14 @@
 <script>
   import 'assets/material_icons.css'
   import 'vuetify/dist/vuetify.min.css'
+
   export default {
     name: 'app',
     data () {
       return {
-        login: '',
+        username: '',
         password: '',
-        showPassword: false
+        loginError: false
       }
     },
     computed: {
@@ -50,26 +59,32 @@
       }
     },
     methods: {
-      togglePassword () {
-        this.showPassword = !this.showPassword
+      invalidUsername () {
+        return !this.loginError || ''
+      },
+      invalidPassword () {
+        return !this.loginError || 'The username and password you entered don\'t match'
+      },
+      login () {
+        this.axios.post('/api/admin/login', {
+          username: this.username,
+          password: this.password
+        })
+        .then(({ data }) => {
+          this.username = ''
+          this.password = ''
+          this.$root.setUserId(data.user.id)
+        })
+        .catch(() => {
+          this.loginError = true
+          this.$refs.username.validate()
+          this.$refs.password.validate()
+        })
       },
       logout () {
         this.axios.get('/api/admin/logout')
         .then(() => {
-          window.location.href = '/'
-        })
-        .catch(console.error)
-      },
-      tryLogin () {
-        this.axios.post('/api/admin/login', {
-          username: this.login,
-          password: this.password
-        })
-        .then(({ data }) => {
-          this.login = ''
-          this.password = ''
-          this.$root.setUserId(data.user.id)
-          this.$router.push('/')
+          this.$root.clearUserId()
         })
         .catch(console.error)
       }
@@ -78,10 +93,14 @@
 </script>
 
 <style scoped>
- .login {
+ .wrapper {
    display: flex;
    flex-direction: column;
    justify-content: center;
+ }
+
+ .login {
+   width: 286px;
  }
 
  .login .input-group {
